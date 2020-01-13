@@ -16,10 +16,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,re_path
 from db import views
+from rest_framework_jwt.views import obtain_jwt_token
+from django.urls import path, include
+from .views import current_user, UserList
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('current_user/', current_user),
+    path('users/', UserList.as_view()),
     re_path('^api/departments/$', views.departments),
     re_path('^api/competency-results/$', views.competency_results),
     re_path('^api/moringa-staff/$', views.moringa_staff),
+    re_path('^api/token_auth/$',obtain_jwt_token),
 ]
