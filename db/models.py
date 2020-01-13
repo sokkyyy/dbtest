@@ -49,6 +49,8 @@ class Department(models.Model):
 
 
     department_names_choices = [
+        ('system_admin','System Admin'), #ONLY FOR SYSTEM ADMIN
+        
         ('finance','Finance'),
         ('hr', 'Human Resource'),
         ('people','People'),

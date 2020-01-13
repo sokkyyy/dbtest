@@ -1,4 +1,4 @@
-from db.serializers.users import UserSerializer
+from db.serializers.moringa_staff import UserSerializer
 
 
 def my_jwt_response_handler(token, user=None, request=None):

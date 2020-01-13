@@ -1,16 +1,39 @@
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,permission_classes
 from rest_framework import status,permissions
 from .models import *
+from django.contrib.auth.models import User
 from .serializers.departments import DepartmentSerializer
 from django.http import HttpResponseRedirect
 from rest_framework.views import APIView
 from .serializers.competencies import CompetencyResultsSerializer
-from .serializers.moringa_staff import MoringaStaffSerializer
-from .serializers.users import UserSerializer, UserSerializerWithToken
+from .serializers.moringa_staff import MoringaStaffSerializer,UserSerializer,UserSerializerWithToken
+
+@permission_classes((permissions.AllowAny,))
+def signin_jwt_wrapped(request, *args, **kwargs):
+    request_data = request.data
+    host = request.get_host()
+    print(host)
+    email = request_data['email']
+    
+    # get the username for this email by model lookup
+    user = User.objects.get(email=email)
+    if user.username is None:
+        response_text = {"non_field_errors":["Unable to login with provided credentials."]}
+        return Response(response_text, status=status.HTTP_400_BAD_REQUEST)
 
 
+    data = {'username': user.username, 'password':request_data['password']}
+    headers = {'content-type': 'application/json'}
+    url = 'http://' + host + '/api/token_auth/'
+    response = request.post(url,data=dumps(data), headers=headers)
 
+    return Response(loads(response.text), status=response.status_code)
+
+@api_view(['GET','POST'])
+def handle_login(request):
+    print(request.data)
+    return Response(request.data)
 # Create your views here.
 @api_view(['GET'])
 def current_user(request):
