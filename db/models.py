@@ -7,10 +7,9 @@ class Role(models.Model):
     '''Model for Staff Role in System'''
 
     role_choices = [
-        ('super_admin', 'Super Admin' )
+        ('super_admin', 'Super Admin'),
         ('admin', 'Admin'),
         ('user', 'System User'),
-
     ]
     role = models.CharField(max_length=20,choices=role_choices)
 
@@ -42,6 +41,9 @@ class JobGrade(models.Model):
     ]
     grade = models.CharField(max_length=10, choices=moringa_job_grade_choices,)
 
+    def __str__(self):
+        return self.grade
+
 class Department(models.Model):
     '''Model for Moringa DEpartments'''
 
@@ -56,99 +58,86 @@ class Department(models.Model):
     manager = models.OneToOneField(User, on_delete=models.CASCADE,related_name='department_manager')
     line_manager = models.OneToOneField(User, on_delete=models.CASCADE)
 
-class MoringaStaff(models.Model):
-    '''Model for All Moringa Staff Members'''
+    def __str__(self):
+        return self.name
 
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+class MoringaStaff(models.Model):
+    ''' Model for All Moringa Staff Members '''
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE,primary_key=True)
     job_grade = models.ForeignKey(JobGrade, on_delete=models.CASCADE)
     department = models.ForeignKey(Department,on_delete=models.CASCADE)
     system_role = models.ForeignKey(Role,on_delete=models.CASCADE)
 
 
+
+
 class Organization(models.Model):
     """Model for Organization Competency Ratings """
 
-    evaluation_type_choices = [
-        ('self', 'Self'),
-        ('manager', 'Manager'),
-        ('final','Final'),
-    ]
     planning = models.IntegerField()
     execution = models.IntegerField()
     prioritization = models.IntegerField()
-    average = models.DecimalField(max_digits=4, decimal_places=2,default=0.00)
-    last_modified = models.DateField(auto_now=True) #changes on every update
-    date_created = models.DateField(auto_now_add=True)
-    type = models.CharField(max_length=30, choices=evaluation_type_choices)
-    staff = models.ForeignKey(MoringaStaff, on_delete=models.CASCADE)
+    score = models.DecimalField(max_digits=4, decimal_places=2,default=0.00)
+
+    
+
 
 class Innovation(models.Model):
     """Model for Innovation Competency Ratings """
 
-    evaluation_type_choices = [
-        ('self', 'Self'),
-        ('manager', 'Manager'),
-        ('final','Final'),
-    ]
-
     vision_setting = models.IntegerField()
     thinking = models.IntegerField() #thinking_out_of_the_box
     adaptability = models.IntegerField()
-    average = models.DecimalField(max_digits=4, decimal_places=2,default=0.00)
-    date = models.DateField(auto_now=True)
-    type = models.CharField(max_length=30, choices=evaluation_type_choices)
-    staff = models.ForeignKey(MoringaStaff, on_delete=models.CASCADE)
+    score = models.DecimalField(max_digits=4, decimal_places=2,default=0.00)
+
 
 
 
 class InterpersonalCommunication(models.Model):
     """Model for Interpersonal Communication Competency Ratings """
 
-    evaluation_type_choices = [
-        ('self', 'Self'),
-        ('manager', 'Manager'),
-        ('final','Final'),
-    ]
     investment_building = models.IntegerField()
     effective_communication = models.IntegerField()
     delivery = models.IntegerField() #delivering the message(method + structure)
-    average = models.DecimalField(max_digits=4, decimal_places=2,default=0.00)
-    last_modified = models.DateField(auto_now=True) #changes on every update
-    date_created = models.DateField(auto_now_add=True)
-    type = models.CharField(max_length=30, choices=evaluation_type_choices)
-    staff = models.ForeignKey(MoringaStaff, on_delete=models.CASCADE)
+    score = models.DecimalField(max_digits=4, decimal_places=2,default=0.00)
+
 
 class CriticalThinking(models.Model):
     """Model for Critical Thinking Competency Ratings """
 
-    evaluation_type_choices = [
-        ('self', 'Self'),
-        ('manager', 'Manager'),
-        ('final','Final'),
-    ]
+
     data_compilation = models.IntegerField()
     data_analysis = models.IntegerField()
     problem_solving = models.IntegerField()
     continual_improvement= models.IntegerField()
-    average = models.DecimalField(max_digits=4, decimal_places=2,default=0.00)
-    last_modified = models.DateField(auto_now=True) #changes on every update
-    date_created = models.DateField(auto_now_add=True)
-    type = models.CharField(max_length=30, choices=evaluation_type_choices)
-    staff = models.ForeignKey(MoringaStaff, on_delete=models.CASCADE)
+    score = models.DecimalField(max_digits=4, decimal_places=2,default=0.00)
+
 
 class Relationships(models.Model): #Building and Managing Relationships
     """Model for Relationships Competency Ratings """
+
+
+    team_work = models.IntegerField()
+    stakeholder_management = models.IntegerField()
+    conflict_management = models.IntegerField()
+    score = models.DecimalField(max_digits=4, decimal_places=2,default=0.00)
+
+
+class CompetencyResults(models.Model):
+    '''Model to Consolidate Competency Ratings'''
 
     evaluation_type_choices = [
         ('self', 'Self'),
         ('manager', 'Manager'),
         ('final','Final'),
     ]
-    team_work = models.IntegerField()
-    stakeholder_management = models.IntegerField()
-    conflict_management = models.IntegerField()
-    average = models.DecimalField(max_digits=4, decimal_places=2,default=0.00)
-    last_modified = models.DateField(auto_now=True) #changes on every update
-    date_created = models.DateField(auto_now_add=True)
     type = models.CharField(max_length=30, choices=evaluation_type_choices)
     staff = models.ForeignKey(MoringaStaff, on_delete=models.CASCADE)
+    organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
+    innovation = models.ForeignKey(Innovation, on_delete=models.CASCADE)
+    interpersonal_communication = models.ForeignKey(InterpersonalCommunication, on_delete=models.CASCADE)
+    critical_thinking = models.ForeignKey(CriticalThinking, on_delete=models.CASCADE)
+    relationships = models.ForeignKey(Relationships, on_delete=models.CASCADE)
+    last_modified = models.DateField(auto_now=True) #changes on every update
+    date_created = models.DateField(auto_now_add=True)
