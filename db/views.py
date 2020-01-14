@@ -3,44 +3,46 @@ from rest_framework.decorators import api_view,permission_classes
 from rest_framework import status,permissions
 from .models import *
 from django.contrib.auth.models import User
+
 from .serializers.departments import DepartmentSerializer
 from django.http import HttpResponseRedirect
 from rest_framework.views import APIView
 from .serializers.competencies import CompetencyResultsSerializer
 from .serializers.moringa_staff import MoringaStaffSerializer,UserSerializer,UserSerializerWithToken
-
-@permission_classes((permissions.AllowAny,))
-def signin_jwt_wrapped(request, *args, **kwargs):
-    request_data = request.data
-    host = request.get_host()
-    print(host)
-    email = request_data['email']
-    
-    # get the username for this email by model lookup
-    user = User.objects.get(email=email)
-    if user.username is None:
-        response_text = {"non_field_errors":["Unable to login with provided credentials."]}
-        return Response(response_text, status=status.HTTP_400_BAD_REQUEST)
+from rest_framework_jwt.serializers import JSONWebTokenSerializer
+from rest_framework_jwt.views import ObtainJSONWebToken
+from rest_framework_jwt.settings import api_settings
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 
-    data = {'username': user.username, 'password':request_data['password']}
-    headers = {'content-type': 'application/json'}
-    url = 'http://' + host + '/api/token_auth/'
-    response = request.post(url,data=dumps(data), headers=headers)
 
-    return Response(loads(response.text), status=response.status_code)
+class CustomJWTSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        credentials = {
+            'username': '',
+            'password': attrs.get("password")
+        }
 
-@api_view(['GET','POST'])
-def handle_login(request):
-    print(request.data)
-    return Response(request.data)
+        # This is answering the original question, but do whatever you need here. 
+        # For example in my case I had to check a different model that stores more user info
+        # But in the end, you should obtain the username to continue.
+        user_obj = User.objects.filter(email=attrs.get("username")).first() or User.objects.filter(username=attrs.get("username")).first()
+        if user_obj:
+            credentials['username'] = user_obj.username
+
+        return super().validate(credentials)
+
+
 # Create your views here.
 @api_view(['GET'])
 def current_user(request):
     """
     Determine the current user by their token, and return their data
     """
-    serializer = UserSerializer(request.user)
+    print(request.user.pk)
+    staff_data = MoringaStaff.objects.get(user=request.user.pk)
+    print(staff_data)
+    serializer = MoringaStaffSerializer(staff_data)
     return Response(serializer.data)
 
 class UserList(APIView):

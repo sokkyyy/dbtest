@@ -1,8 +1,8 @@
 from db.serializers.moringa_staff import UserSerializer
 
 
-def my_jwt_response_handler(token, user=None, request=None):
+def my_jwt_response_handler(access, user=None, request=None):
     return {
-        'token': token,
-        'user': UserSerializer(user, context={'request': request}).data
+        'access': access,
+        'user': UserSerializer(user, context={'request': request}).data,
     }

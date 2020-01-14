@@ -16,10 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path,re_path
 from db import views
-from rest_framework_jwt.views import obtain_jwt_token
 from django.urls import path, include
-from db.views import current_user, UserList 
-
+from db.views import  current_user, UserList,CustomJWTSerializer 
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,6 +30,6 @@ urlpatterns = [
     re_path('^api/departments/$', views.departments),
     re_path('^api/competency-results/$', views.competency_results),
     re_path('^api/moringa-staff/$', views.moringa_staff),
-    re_path('^api/token_auth/$',obtain_jwt_token),
-    re_path('^api/signin/$', views.handle_login),
+    re_path('^api/token_auth/$',TokenObtainPairView.as_view(serializer_class=CustomJWTSerializer)),
+    re_path('^api/refresh_token/$', TokenRefreshView.as_view()),
 ]
